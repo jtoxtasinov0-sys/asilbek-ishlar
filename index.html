@@ -408,6 +408,8 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     full.src = t.v.full;
     full.currentTime = 0;
     full.muted = true; // videolar ovozsiz — ovoz fon musiqasidan keladi
+    full.playbackRate = 1;
+    syncing = true;
     safePlay(full);
   }
   function detach(t) {
@@ -417,7 +419,25 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     t.inStage = false;
     t.vid.pause();
   }
+  /* HD video kechroq yuklanadi: ko'rinmay turib tezlashtirilgan holda kichik videoga yetib oladi, keyin almashadi —
+     video 0:00 dan ikkinchi marta boshlanmaydi, kichik video ham to'xtab qolmaydi */
+  let syncing = false;
+  function catchUp() {
+    const v = tiles[cur].vid;
+    if (full.readyState < 3 || full.seeking) return;
+    const lag = v.currentTime - full.currentTime;
+    if (lag > 0.04) { // yetib olgan sari sekinlashadi — almashganda sakrash bo'lmaydi
+      const rate = Math.min(4, Math.round((1 + lag * 8) * 4) / 4);
+      if (full.playbackRate !== rate) full.playbackRate = rate;
+      return;
+    }
+    syncing = false;
+    full.playbackRate = 1;
+    stage.classList.add('hd');
+    v.pause();
+  }
   full.addEventListener('playing', () => {
+    if (syncing) return;
     stage.classList.add('hd');
     if (cur >= 0) tiles[cur].vid.pause();
   });
@@ -645,6 +665,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     }
 
     if (lbOpen && cur >= 0) {
+      if (syncing) catchUp();
       const v = stage.classList.contains('hd') ? full : tiles[cur].vid;
       bar.style.transform = `scaleX(${v.duration ? (v.currentTime / v.duration).toFixed(4) : 0})`;
     }
