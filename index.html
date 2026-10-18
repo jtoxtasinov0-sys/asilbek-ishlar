@@ -402,10 +402,11 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
   function attach(t) {
     t.inStage = true;
     stage.insertBefore(t.vid, full);
+    t.vid.currentTime = 0; // ochilgan video doim boshidan (00:00) boshlanadi
     safePlay(t.vid);
     stage.classList.remove('hd');
     full.src = t.v.full;
-    full.currentTime = t.vid.currentTime || 0;
+    full.currentTime = 0;
     full.muted = true; // videolar ovozsiz — ovoz fon musiqasidan keladi
     safePlay(full);
   }
@@ -500,14 +501,14 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     });
   }
 
-  function go(d) {
+  function go(d, ax = 'X') {
     if (!lbOpen) return;
     busy = true;
     const old = tiles[cur], ni = (cur + d + COUNT) % COUNT, nt = tiles[ni];
     stage.style.translate = '';
     const out = stage.animate(
       [{ transform: 'none', opacity: 1, filter: 'blur(0px)' },
-       { transform: `translateX(${-d * 10}%) scale(.9)`, opacity: 0, filter: 'blur(10px)' }],
+       { transform: `translate${ax}(${-d * 10}%) scale(.9)`, opacity: 0, filter: 'blur(10px)' }],
       { duration: D(260), easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
     settle(out, D(260)).then(() => {
       detach(old);
@@ -520,14 +521,14 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
       setBox(target(nt));
       out.cancel();
       const inA = stage.animate(
-        [{ transform: `translateX(${d * 10}%) scale(.9)`, opacity: 0, filter: 'blur(10px)' },
+        [{ transform: `translate${ax}(${d * 10}%) scale(.9)`, opacity: 0, filter: 'blur(10px)' },
          { transform: 'none', opacity: 1, filter: 'blur(0px)' }],
         { duration: D(620), easing: SPRING }
       );
       settle(inA, D(620)).then(idle);
     });
   }
-  const next = d => request(() => go(d));
+  const next = (d, ax) => request(() => go(d, ax));
 
   /* ---------- Fon musiqasi: butun sayt bo'ylab bitta, video ochilganda ham to'xtamay davom etadi ---------- */
   const music = $('#music'), musBtn = $('#musBtn');
@@ -564,10 +565,22 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     if (e.key === 'Escape') close();
     else if (e.key === 'ArrowRight') next(1);
     else if (e.key === 'ArrowLeft') next(-1);
+    else if (e.key === 'ArrowDown') { e.preventDefault(); next(1, 'Y'); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); next(-1, 'Y'); }
   });
   addEventListener('resize', () => { if (lbOpen && !busy) setBox(target(tiles[cur])); });
 
-  /* Surish (telefon): chap/o'ng — keyingi/oldingi, aniq pastga — yopish.
+  /* G'ildirak/trackpad skroll — keyingi/oldingi video; bitta skroll harakati bitta videoga o'tkazadi */
+  let wheelT = 0;
+  lb.addEventListener('wheel', e => {
+    if (!lbOpen) return;
+    e.preventDefault();
+    const now = performance.now(), fresh = now - wheelT > 300;
+    wheelT = now;
+    if (fresh && Math.abs(e.deltaY) > 4) next(e.deltaY > 0 ? 1 : -1, 'Y');
+  }, { passive: false });
+
+  /* Surish (telefon): chap/o'ng — keyingi/oldingi, tepaga/pastga (skroll) — keyingi/oldingi.
      Telefonda fonga tegish oynani yopmaydi (tugmadan adashib tegib ketsa ham), kompyuterda — yopadi. */
   let down = null;
   lb.addEventListener('pointerdown', e => {
@@ -578,7 +591,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
   lb.addEventListener('pointermove', e => {
     if (!down || e.pointerId !== down.id || e.pointerType === 'mouse') return;
     const dx = e.clientX - down.x, dy = e.clientY - down.y;
-    stage.style.translate = Math.abs(dx) >= Math.abs(dy) ? `${dx * 0.6}px 0px` : `0px ${Math.max(0, dy) * 0.5}px`;
+    stage.style.translate = Math.abs(dx) >= Math.abs(dy) ? `${dx * 0.6}px 0px` : `0px ${dy * 0.5}px`;
   });
   const endDrag = e => {
     if (!down || e.pointerId !== down.id) return;
@@ -588,7 +601,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     stage.classList.remove('drag');
     if (e.type === 'pointercancel') { stage.style.translate = ''; return; }
     if (ax > (fast ? 30 : 60) && ax > ay * 1.2) next(dx < 0 ? 1 : -1);
-    else if (dy > 120 && ay > ax * 1.5) close();
+    else if (ay > (fast ? 30 : 60) && ay > ax * 1.2) next(dy < 0 ? 1 : -1, 'Y');
     else {
       stage.style.translate = '';
       if (ax < 10 && ay < 10) {
