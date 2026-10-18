@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#140b06">
+<title>Asilbek Adhamov — Ishlar</title>
+<meta name="description" content="Mana shunday ishlar. Asilbek Adhamovning 24 ta motion video ishi.">
+<link rel="canonical" href="https://asilbek-ishlar.vercel.app/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23ff6a00'/%3E%3C/svg%3E">
+<!-- Ulashganda chiqadigan rasm (Telegram, Instagram, WhatsApp...) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Asilbek Adhamov">
+<meta property="og:title" content="Asilbek Adhamov — Mana shunday ishlar.">
+<meta property="og:description" content="24 ta motion video. Bosing va koʻring.">
+<meta property="og:url" content="https://asilbek-ishlar.vercel.app/">
+<meta property="og:image" content="https://asilbek-ishlar.vercel.app/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Asilbek Adhamov — Mana shunday ishlar">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Asilbek Adhamov — Mana shunday ishlar.">
+<meta name="twitter:description" content="24 ta motion video. Bosing va koʻring.">
+<meta name="twitter:image" content="https://asilbek-ishlar.vercel.app/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ===== RANGLAR: Orange · White · Brown ===== */
+  --bg:#140b06;          /* eng to'q jigarrang — fon */
+  --surface:#22140c;     /* kartochka foni */
+  --surface-2:#33200f;
+  --line:#4a2e1e;
+  --white:#ffffff;
+  --muted:#c9b3a3;
+  --orange:#ff6a00;
+  --orange-2:#ff8a2a;
+  --on-orange:#1a0a02;
+  /* =========================================== */
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --gutter:clamp(16px,2.6vw,40px);
+  --gap:clamp(6px,.7vw,11px);
+  --r:clamp(10px,1vw,16px);
+  --r-lg:22px;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+html.lock{overflow:hidden}
+body{
+  background:var(--bg);color:var(--white);font-family:var(--display);
+  -webkit-font-smoothing:antialiased;overflow-x:clip;
+}
+body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda qayta hisoblanmaydi) */
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:100;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.glow{
+  position:fixed;left:0;top:0;width:80vmax;height:80vmax;border-radius:50%;pointer-events:none;z-index:0;
+  background:radial-gradient(circle,color-mix(in srgb,var(--orange) 22%,transparent) 0%,transparent 60%);
+  transform:translate3d(50vw,30vh,0) translate(-50%,-50%);will-change:transform;
+}
+
+/* ---------- Slayd ---------- */
+.slide{
+  position:relative;z-index:1;height:100vh;height:100svh;min-height:620px;
+  display:flex;flex-direction:column;padding:0 var(--gutter) var(--gutter);
+}
+.bar{flex:none;height:64px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700;font-size:17px;letter-spacing:-.01em;color:var(--white);text-decoration:none}
+.brand svg{width:13px;height:13px;fill:var(--orange)}
+.rec{display:flex;gap:10px;align-items:center;font:500 12px/1 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.rec i{width:8px;height:8px;border-radius:50%;background:var(--orange);box-shadow:0 0 12px var(--orange);animation:blink 1.2s steps(2,jump-none) infinite}
+@keyframes blink{50%{opacity:.25}}
+
+.mosaic{
+  flex:1;min-height:0;display:grid;gap:var(--gap);
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  grid-template-rows:repeat(6,minmax(0,1fr));
+  will-change:transform;
+}
+.intro{
+  grid-area:1/1/3/5;container-type:size;
+  display:flex;flex-direction:column;justify-content:space-between;padding:6px 8px 4px 2px;
+}
+.eyebrow{margin:0;font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;align-items:center}
+.eyebrow b{color:var(--orange);font-weight:600}
+.intro h1{margin:0;font-weight:800;font-size:clamp(28px,min(12.5cqw,23cqh),92px);line-height:.92;letter-spacing:-.045em}
+.intro h1 em{font-style:normal;color:var(--orange)}
+.hint{margin:0;display:flex;gap:12px;align-items:center;color:var(--muted);font-size:15px}
+.hint span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--orange);color:var(--on-orange);flex:none}
+.hint svg{width:16px;height:16px}
+
+/* ---------- Kataklar ---------- */
+.tile{
+  position:relative;display:block;padding:0;border:0;margin:0;font:inherit;color:inherit;
+  border-radius:var(--r);overflow:hidden;background:var(--surface);cursor:pointer;outline:none;
+  -webkit-tap-highlight-color:transparent;isolation:isolate;
+  transition:transform .6s var(--ease),opacity .45s ease,filter .45s ease,box-shadow .45s ease;
+}
+.tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:var(--surface);transition:transform 1.4s var(--ease)}
+.tile::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);transition:box-shadow .4s}
+.tile:focus-visible::after{box-shadow:inset 0 0 0 2px var(--orange)}
+.tile.is-source{visibility:hidden}
+.tile:active{transform:scale(.95)}
+@media (hover:hover) and (pointer:fine){
+  .tile{cursor:none}
+  .mosaic:has(.tile:hover) .tile:not(:hover){opacity:.32}
+  .tile:hover{transform:scale(1.05);z-index:5;box-shadow:0 26px 70px -12px rgba(0,0,0,.75)}
+  .tile:hover::after{box-shadow:inset 0 0 0 2px var(--orange)}
+  .tile:hover video{transform:scale(1.07)}
+}
+
+/* kirish animatsiyasi: kataklar to'lqin bo'lib chiqadi */
+.mosaic:not(.go) .tile,.mosaic:not(.go) .intro>*{opacity:0}
+.go .tile{animation:tileIn 1.15s var(--ease) var(--delay,0s) backwards}
+@keyframes tileIn{from{opacity:0;transform:scale(.5);filter:blur(16px) brightness(1.8)}}
+.go .intro>*{animation:rise 1s var(--ease) backwards}
+.go .intro>:nth-child(2){animation-delay:.08s}
+.go .intro>:nth-child(3){animation-delay:.5s}
+@keyframes rise{from{opacity:0;transform:translateY(28px)}}
+
+/* ---------- Kattalashgan oyna ---------- */
+.lb{position:fixed;inset:0;z-index:50;visibility:hidden;touch-action:none}
+.lb.is-active{visibility:visible}
+.lb__bg{
+  position:absolute;inset:0;opacity:0;transition:opacity .55s ease;
+  background:color-mix(in srgb,var(--bg) 72%,transparent);
+  -webkit-backdrop-filter:blur(22px) saturate(1.2);backdrop-filter:blur(22px) saturate(1.2);
+}
+.lb.is-open .lb__bg{opacity:1}
+.lb__stage{
+  position:fixed;left:0;top:0;width:0;height:0;border-radius:var(--r-lg);overflow:hidden;background:#000;
+  box-shadow:0 50px 160px -30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.07),0 0 120px -40px var(--orange);
+  transition:translate .4s var(--ease);
+}
+.lb__stage.drag{transition:none}
+.lb__stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.lb__full{opacity:0;transition:opacity .4s ease}
+.lb__stage.hd .lb__full{opacity:1}
+.lb__bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.12);z-index:2}
+.lb__bar i{display:block;height:100%;transform-origin:left;transform:scaleX(0);background:var(--orange)}
+
+.lb__btn{
+  position:absolute;z-index:3;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  border:1px solid rgba(255,255,255,.14);color:var(--white);
+  background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  opacity:0;transform:scale(.8);transition:opacity .35s ease,transform .45s var(--ease),background .25s,color .25s;
+}
+.lb.is-open .lb__btn{opacity:1;transform:none;transition-delay:.25s,.25s,0s,0s}
+.lb__btn:hover{background:var(--orange);color:var(--on-orange);border-color:var(--orange)}
+.lb__btn:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.lb__btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lb__close{top:max(18px,env(safe-area-inset-top));right:18px}
+.lb__sound{top:max(18px,env(safe-area-inset-top));right:78px}
+.lb__prev,.lb__next{top:50%;margin-top:-28px;width:56px;height:56px}
+.lb__prev{left:22px}.lb__next{right:22px}
+.lb__btn.is-hidden{display:none}
+.lb__sound .off{display:none}
+.lb__sound.muted .on{display:none}.lb__sound.muted .off{display:block}
+
+/* ---------- Kursor ---------- */
+.cursor{
+  position:fixed;left:0;top:0;z-index:60;pointer-events:none;width:34px;height:34px;
+  transform-origin:0 0;transform:translate3d(-200px,-200px,0) scale(0);will-change:transform;
+}
+.cursor svg{
+  display:block;width:100%;height:100%;margin:-4px 0 0 -4px;overflow:visible;
+  fill:#fff;stroke:#fff;stroke-width:3;stroke-linejoin:round;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.45));
+}
+@media not ((hover:hover) and (pointer:fine)){.cursor,.glow{display:none}}
+
+/* ---------- Telefon: hammasi bitta ekranda ---------- */
+@media (max-width:759px),(max-width:1023px) and (orientation:portrait){
+  :root{--gutter:14px;--gap:5px;--r:9px;--r-lg:16px;--intro-h:46px;--bar-h:48px}
+  .slide{height:auto;min-height:100svh;justify-content:center}
+  .bar{height:var(--bar-h);position:absolute;top:0;left:var(--gutter);right:var(--gutter)}
+  .brand{font-size:15px}
+  .mosaic{
+    flex:none;margin-top:var(--bar-h);
+    --col:calc((100vw - 2 * var(--gutter) - 5 * var(--gap)) / 6);
+    --row-ideal:calc((2 * var(--col) + var(--gap)) * .5625);
+    --row-fit:calc((100svh - var(--bar-h) - var(--gutter) - var(--intro-h) - 9 * var(--gap)) / 9);
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    grid-template-rows:var(--intro-h) repeat(9,max(40px,min(var(--row-ideal),var(--row-fit))));
+  }
+  .intro{grid-area:1/1/2/7;container-type:normal;flex-direction:row;align-items:center;padding:0 2px}
+  .intro .eyebrow{display:none}
+  .intro h1{font-size:clamp(22px,7vw,34px)}
+  .hint{font-size:12px;gap:8px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em}
+  .hint span{width:26px;height:26px}
+  .hint svg{width:13px;height:13px}
+  .lb__close,.lb__sound{width:44px;height:44px}
+  .lb__sound{right:72px}
+  .lb__prev,.lb__next{top:auto;margin:0;bottom:max(28px,env(safe-area-inset-bottom));width:60px;height:60px}
+  .lb__prev{left:calc(50% - 76px)}.lb__next{right:calc(50% - 76px)}
+}
+
+/* ---------- Fon musiqasi tugmasi ---------- */
+.bar__r{display:flex;gap:18px;align-items:center}
+.mus{
+  display:flex;gap:9px;align-items:center;height:32px;padding:0 13px 0 11px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 70%,transparent);color:var(--muted);
+  font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  transition:color .25s,border-color .25s;
+}
+.mus:hover{color:var(--white);border-color:var(--orange)}
+.mus:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.eq{display:flex;gap:2px;align-items:flex-end;height:12px}
+.eq i{width:2px;height:100%;border-radius:1px;background:var(--orange);transform-origin:bottom;transform:scaleY(.25);transition:transform .3s}
+.mus.is-on .eq i{animation:eq .8s ease-in-out infinite alternate}
+.mus.is-on .eq i:nth-child(2){animation-duration:.55s;animation-delay:-.2s}
+.mus.is-on .eq i:nth-child(3){animation-duration:.95s;animation-delay:-.5s}
+.mus.is-on .eq i:nth-child(4){animation-duration:.65s;animation-delay:-.35s}
+@keyframes eq{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+@media (max-width:759px),(max-width:1023px) and (orientation:portrait){
+  .bar__r{gap:12px}
+  .mus{height:30px;padding:0 10px}
+  .mus__t{display:none}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .go .tile,.go .intro>*{animation:none}
+  .tile,.tile video{transition:opacity .2s}
+  .mus.is-on .eq i{animation:none;transform:scaleY(.7)}
+}
+</style>
+</head>
+<body>
+<div class="glow" id="glow" aria-hidden="true"></div>
+
+<main class="slide">
+  <header class="bar">
+    <a class="brand" href="#"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 0 10 5 5 10 0 5Z"/></svg>Asilbek Adhamov</a>
+    <div class="bar__r">
+      <button class="mus" id="musBtn" type="button" aria-pressed="true" aria-label="Musiqa"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="mus__t">Musiqa</span></button>
+      <span class="rec" aria-hidden="true"><i></i><span id="tc">00:00:00:00</span></span>
+    </div>
+  </header>
+  <audio id="music" src="media/music.m4a" loop preload="metadata"></audio>
+
+  <section class="mosaic" id="mosaic" aria-label="Ishlar">
+    <div class="intro">
+      <p class="eyebrow"><b>◆</b> Ishlar · <span id="count">24</span> ta video</p>
+      <h1>Mana shunday <em>ishlar.</em></h1>
+      <p class="hint"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7"/></svg></span>Bosing</p>
+    </div>
+  </section>
+</main>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Video">
+  <div class="lb__bg"></div>
+  <div class="lb__stage" id="stage">
+    <video class="lb__full" id="full" playsinline loop muted preload="auto"></video>
+    <div class="lb__bar"><i id="bar"></i></div>
+  </div>
+  <button class="lb__btn lb__sound" id="soundBtn" type="button" aria-label="Ovoz">
+    <svg class="on" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+    <svg class="off" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 6 6M22 9l-6 6"/></svg>
+  </button>
+  <button class="lb__btn lb__close" id="closeBtn" type="button" aria-label="Yopish"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <button class="lb__btn lb__prev" id="prevBtn" type="button" aria-label="Oldingi"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+  <button class="lb__btn lb__next" id="nextBtn" type="button" aria-label="Keyingi"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+</div>
+
+<div class="cursor" id="cursor" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4.2 19.6 13.3 12.4 15.6 7.7 21.3Z"/></svg></div>
+
+<script>
+(() => {
+  /* ===== Videolar: media/thumb (katak), media/full (kattalashganda), media/poster ===== */
+  const COUNT = 24;
+  const VERTICAL = [19];                 // vertikal (9:16) videolar raqami
+  const pad = n => String(n).padStart(2, '0');
+  const VIDEOS = Array.from({ length: COUNT }, (_, i) => {
+    const n = pad(i + 1);
+    return {
+      n: i + 1,
+      thumb: `media/thumb/${n}.mp4`,
+      full: `media/full/${n}.mp4`,
+      poster: `media/poster/${n}.jpg`,
+      aspect: VERTICAL.includes(i + 1) ? 9 / 16 : 16 / 9,
+    };
+  });
+
+  /* Joylashuv: [ustun, qator, kenglik, balandlik, tur] — 'hero' katta, 'v' vertikal */
+  const DESK = [
+    [5,1,4,2,'hero'], [9,1,2,1], [11,1,2,1], [9,2,2,1], [11,2,2,1],
+    [1,3,2,1], [3,3,2,1], [5,3,2,1], [7,3,2,1], [9,3,4,2,'hero'],
+    [1,4,2,1], [3,4,2,1], [5,4,2,1], [7,4,2,1],
+    [1,5,3,2], [4,5,1,2,'v'],
+    [5,5,2,1], [7,5,2,1], [9,5,2,1], [11,5,2,1],
+    [5,6,2,1], [7,6,2,1], [9,6,2,1], [11,6,2,1],
+  ];
+  const MOB = [
+    [1,1,4,2,'hero'], [5,1,2,1], [5,2,2,1],
+    [1,3,2,1], [3,3,2,1], [5,3,2,1],
+    [1,4,2,2,'v'], [3,4,2,1], [5,4,2,1], [3,5,2,1], [5,5,2,1],
+    [1,6,2,1], [3,6,2,1], [5,6,2,1],
+    [1,7,2,1], [3,7,2,1], [5,7,2,1],
+    [1,8,2,1], [3,8,2,1], [5,8,2,1],
+    [1,9,1,1], [2,9,1,1], [3,9,2,1], [5,9,2,1],
+  ];
+
+  const $ = s => document.querySelector(s);
+  const mosaic = $('#mosaic'), lb = $('#lb'), stage = $('#stage'), full = $('#full'), bar = $('#bar');
+  const soundBtn = $('#soundBtn'), closeBtn = $('#closeBtn'), cursor = $('#cursor'), glow = $('#glow'), tc = $('#tc');
+  const mq = matchMedia('(max-width: 759px), (max-width: 1023px) and (orientation: portrait)');
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SPRING = CSS.supports('transition-timing-function', 'linear(0, 1)')
+    ? 'linear(0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25.3%, 0.849 31.5%, 0.937 38.1%, 0.968 41.8%, 0.991 45.7%, 1.006 50.1%, 1.015 55%, 1.017 63.9%, 1.001)'
+    : 'cubic-bezier(.22,1,.36,1)';
+  const D = ms => (reduce ? 1 : ms);
+  const safePlay = v => { const p = v.play(); if (p) p.catch(() => {}); };
+  $('#count').textContent = COUNT;
+
+  /* ---------- Kataklarni yasash ---------- */
+  const tiles = VIDEOS.map((v, i) => {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'tile';
+    el.setAttribute('aria-label', `${v.n}-video, kattalashtirish`);
+    const vid = document.createElement('video');
+    vid.muted = true; vid.loop = true; vid.playsInline = true; vid.preload = 'metadata';
+    vid.setAttribute('muted', ''); vid.setAttribute('playsinline', '');
+    vid.poster = v.poster; vid.src = v.thumb;
+    el.appendChild(vid);
+    mosaic.appendChild(el);
+    const t = { el, vid, v, i, inStage: false, anim: null, slot: null };
+    el._t = t;
+    el.addEventListener('click', () => open(i));
+    return t;
+  });
+
+  function layout() {
+    const m = mq.matches, slots = m ? MOB : DESK, off = m ? 1 : 0;
+    const vert = tiles.filter(t => VERTICAL.includes(t.v.n));
+    const rest = tiles.filter(t => !VERTICAL.includes(t.v.n));
+    slots.forEach(s => {
+      const t = (s[4] === 'v' ? vert.shift() : rest.shift()) || rest.shift();
+      if (!t) return;
+      t.slot = s;
+      t.el.style.gridArea = `${s[1] + off} / ${s[0]} / span ${s[3]} / span ${s[2]}`;
+    });
+  }
+  layout();
+  mq.addEventListener('change', () => { layout(); if (lbOpen) setBox(target(tiles[cur])); });
+
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+
+  /* Kirish: katta katakdan boshlab to'lqin */
+  requestAnimationFrame(() => {
+    const hero = tiles.find(t => t.slot && t.slot[4] === 'hero') || tiles[0];
+    const c0 = center(hero.el);
+    const ds = tiles.map(t => dist(center(t.el), c0));
+    const max = Math.max(...ds) || 1;
+    tiles.forEach((t, k) => t.el.style.setProperty('--delay', (0.1 + (ds[k] / max) * 0.9).toFixed(3) + 's'));
+    mosaic.classList.add('go');
+  });
+
+  /* Faqat ko'rinib turgan videolar o'ynaydi; kirish animatsiyasi paytida va oyna ochiqligida to'xtab turadi */
+  let live = false;
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    const t = e.target._t;
+    t.seen = e.isIntersecting;
+    if (t.inStage || !live || lbOpen) return;
+    t.seen ? safePlay(t.vid) : t.vid.pause();
+  }), { threshold: 0.01 });
+  tiles.forEach(t => io.observe(t.el));
+  const playSeen = () => tiles.forEach(t => { if (!t.inStage && t.seen) safePlay(t.vid); });
+  const pauseAll = () => tiles.forEach(t => { if (!t.inStage) t.vid.pause(); });
+  setTimeout(() => { live = true; if (!lbOpen) playSeen(); }, reduce ? 0 : 1500);
+
+  /* ---------- Kattalashtirish ---------- */
+  let cur = -1, busy = false, lbOpen = false, sound = true, queued = null;
+  /* Animatsiya tugashini kutish; brauzer animatsiyani to'xtatib qo'ysa ham qotib qolmaydi */
+  const settle = (anim, ms) => new Promise(res => {
+    let done = false;
+    const f = () => { if (!done) { done = true; res(); } };
+    anim.finished.then(f, f);
+    setTimeout(f, ms + 150);
+  });
+  const idle = () => { busy = false; if (queued) { const q = queued; queued = null; q(); } };
+  const request = fn => { if (busy) queued = fn; else fn(); };
+  const box = r => ({ left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+  const setBox = r => Object.assign(stage.style, box(r));
+  const radius = el => getComputedStyle(el).borderRadius;
+  const lgRadius = () => getComputedStyle(document.documentElement).getPropertyValue('--r-lg').trim();
+
+  function target(t) {
+    const a = t.v.aspect, m = mq.matches;
+    const maxW = innerWidth * (m ? 0.94 : 0.84);
+    const maxH = innerHeight * (m ? 0.72 : 0.84);
+    const w = Math.min(maxW, maxH * a), h = w / a;
+    return { left: (innerWidth - w) / 2, top: (innerHeight - h) / 2 - (m ? 20 : 0), width: w, height: h };
+  }
+
+  function attach(t) {
+    t.inStage = true;
+    stage.insertBefore(t.vid, full);
+    safePlay(t.vid);
+    stage.classList.remove('hd');
+    full.src = t.v.full;
+    full.currentTime = t.vid.currentTime || 0;
+    full.muted = true; // videolar ovozsiz — ovoz fon musiqasidan keladi
+    safePlay(full);
+  }
+  function detach(t) {
+    if (!t.inStage) return;
+    if (stage.classList.contains('hd') && t.vid.duration) t.vid.currentTime = full.currentTime % t.vid.duration;
+    t.el.insertBefore(t.vid, t.el.firstChild);
+    t.inStage = false;
+    t.vid.pause();
+  }
+  full.addEventListener('playing', () => {
+    stage.classList.add('hd');
+    if (cur >= 0) tiles[cur].vid.pause();
+  });
+
+  function ripple(src, out) {
+    const c0 = center(src.el);
+    tiles.forEach(o => {
+      if (o === src) return;
+      const delay = reduce ? 0 : dist(center(o.el), c0) * 0.35;
+      if (out) {
+        o.anim = o.el.animate(
+          [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.84)', opacity: .45 }],
+          { duration: D(700), delay, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' });
+      } else if (o.anim) {
+        const prev = o.anim;
+        o.anim = null;
+        o.el.animate(
+          [{ transform: 'scale(.84)', opacity: .45 }, { transform: 'scale(1)', opacity: 1 }],
+          { duration: D(650), delay: delay * 0.8, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' });
+        prev.cancel();
+      }
+    });
+  }
+
+  function open(i) {
+    if (busy || lbOpen) return;
+    busy = true; lbOpen = true; cur = i;
+    const t = tiles[i];
+    const from = t.el.getBoundingClientRect();
+    const fromR = radius(t.el);
+    attach(t);
+    pauseAll(); // xira fon ortidagi videolar o'ynamaydi — blur har kadrda qayta hisoblanmaydi
+    const to = target(t);
+    setBox(to);
+    lb.classList.add('is-active', 'is-open');
+    document.documentElement.classList.add('lock');
+    t.el.classList.add('is-source');
+    ripple(t, true);
+    history.pushState({ lb: 1 }, '');
+    const a = stage.animate(
+      [{ ...box(from), borderRadius: fromR }, { ...box(to), borderRadius: lgRadius() }],
+      { duration: D(950), easing: SPRING }
+    );
+    settle(a, D(950)).then(() => { closeBtn.focus({ preventScroll: true }); idle(); });
+  }
+
+  /* Yopish doim tarix orqali: telefondagi "orqaga" tugmasi/chetdan surish ham sahifadan chiqarmay, oynani yopadi */
+  function close() {
+    if (!lbOpen) return;
+    if (history.state && history.state.lb) history.back();
+    else request(doClose);
+  }
+  addEventListener('popstate', () => { if (lbOpen) request(doClose); });
+  if (history.state && history.state.lb) history.replaceState(null, '');
+
+  function doClose() {
+    if (!lbOpen) return;
+    busy = true;
+    const t = tiles[cur];
+    const from = stage.getBoundingClientRect();
+    stage.style.translate = '';
+    const to = t.el.getBoundingClientRect();
+    lb.classList.remove('is-open');
+    ripple(t, false);
+    const a = stage.animate(
+      [{ ...box(from), borderRadius: lgRadius() }, { ...box(to), borderRadius: radius(t.el) }],
+      { duration: D(700), easing: 'cubic-bezier(.7,0,.2,1)', fill: 'forwards' }
+    );
+    settle(a, D(700)).then(() => {
+      detach(t);
+      t.el.classList.remove('is-source');
+      full.pause(); full.removeAttribute('src'); full.load();
+      stage.classList.remove('hd');
+      lb.classList.remove('is-active');
+      a.cancel();
+      document.documentElement.classList.remove('lock');
+      lbOpen = false; cur = -1;
+      if (live) playSeen();
+      t.el.focus({ preventScroll: true });
+      idle();
+    });
+  }
+
+  function go(d) {
+    if (!lbOpen) return;
+    busy = true;
+    const old = tiles[cur], ni = (cur + d + COUNT) % COUNT, nt = tiles[ni];
+    stage.style.translate = '';
+    const out = stage.animate(
+      [{ transform: 'none', opacity: 1, filter: 'blur(0px)' },
+       { transform: `translateX(${-d * 10}%) scale(.9)`, opacity: 0, filter: 'blur(10px)' }],
+      { duration: D(260), easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
+    settle(out, D(260)).then(() => {
+      detach(old);
+      old.el.classList.remove('is-source');
+      old.anim = old.el.animate([{ transform: 'scale(.84)', opacity: .45 }], { duration: 0, fill: 'forwards' });
+      if (nt.anim) { nt.anim.cancel(); nt.anim = null; }
+      cur = ni;
+      nt.el.classList.add('is-source');
+      attach(nt);
+      setBox(target(nt));
+      out.cancel();
+      const inA = stage.animate(
+        [{ transform: `translateX(${d * 10}%) scale(.9)`, opacity: 0, filter: 'blur(10px)' },
+         { transform: 'none', opacity: 1, filter: 'blur(0px)' }],
+        { duration: D(620), easing: SPRING }
+      );
+      settle(inA, D(620)).then(idle);
+    });
+  }
+  const next = d => request(() => go(d));
+
+  /* ---------- Fon musiqasi: butun sayt bo'ylab bitta, video ochilganda ham to'xtamay davom etadi ---------- */
+  const music = $('#music'), musBtn = $('#musBtn');
+  function syncSound() {
+    const on = sound && !music.paused;
+    soundBtn.classList.toggle('muted', !sound);
+    soundBtn.setAttribute('aria-label', sound ? 'Musiqani o\'chirish' : 'Musiqani yoqish');
+    musBtn.classList.toggle('is-on', on);
+    musBtn.setAttribute('aria-pressed', String(sound));
+    musBtn.setAttribute('aria-label', sound ? 'Musiqani o\'chirish' : 'Musiqani yoqish');
+  }
+  const startMusic = () => {
+    if (!sound || !music.paused || document.hidden) return;
+    const p = music.play();
+    if (p) p.catch(() => {});
+  };
+  const toggleSound = () => { sound = !sound; sound ? startMusic() : music.pause(); syncSound(); };
+  music.addEventListener('play', syncSound);
+  music.addEventListener('pause', syncSound);
+  /* Brauzerlar ovozni faqat birinchi bosish/tegishdan keyin ruxsat beradi */
+  const kick = e => { if (!(e.target.closest && e.target.closest('#musBtn,#soundBtn'))) startMusic(); };
+  ['pointerdown', 'keydown', 'touchend'].forEach(ev => addEventListener(ev, kick, { capture: true, passive: true }));
+  document.addEventListener('visibilitychange', () => { document.hidden ? music.pause() : startMusic(); });
+  startMusic();
+  syncSound();
+  soundBtn.addEventListener('click', toggleSound);
+  musBtn.addEventListener('click', toggleSound);
+  closeBtn.addEventListener('click', close);
+  $('#prevBtn').addEventListener('click', () => next(-1));
+  $('#nextBtn').addEventListener('click', () => next(1));
+
+  addEventListener('keydown', e => {
+    if (!lbOpen) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowRight') next(1);
+    else if (e.key === 'ArrowLeft') next(-1);
+  });
+  addEventListener('resize', () => { if (lbOpen && !busy) setBox(target(tiles[cur])); });
+
+  /* Surish (telefon): chap/o'ng — keyingi/oldingi, aniq pastga — yopish.
+     Telefonda fonga tegish oynani yopmaydi (tugmadan adashib tegib ketsa ham), kompyuterda — yopadi. */
+  let down = null;
+  lb.addEventListener('pointerdown', e => {
+    if (!lbOpen || e.target.closest('button') || (down && down.id !== e.pointerId)) return;
+    down = { x: e.clientX, y: e.clientY, id: e.pointerId, type: e.pointerType, t: performance.now(), onStage: !!e.target.closest('#stage') };
+    stage.classList.add('drag');
+  });
+  lb.addEventListener('pointermove', e => {
+    if (!down || e.pointerId !== down.id || e.pointerType === 'mouse') return;
+    const dx = e.clientX - down.x, dy = e.clientY - down.y;
+    stage.style.translate = Math.abs(dx) >= Math.abs(dy) ? `${dx * 0.6}px 0px` : `0px ${Math.max(0, dy) * 0.5}px`;
+  });
+  const endDrag = e => {
+    if (!down || e.pointerId !== down.id) return;
+    const dx = e.clientX - down.x, dy = e.clientY - down.y, ax = Math.abs(dx), ay = Math.abs(dy);
+    const { onStage, type } = down, fast = performance.now() - down.t < 280;
+    down = null;
+    stage.classList.remove('drag');
+    if (e.type === 'pointercancel') { stage.style.translate = ''; return; }
+    if (ax > (fast ? 30 : 60) && ax > ay * 1.2) next(dx < 0 ? 1 : -1);
+    else if (dy > 120 && ay > ax * 1.5) close();
+    else {
+      stage.style.translate = '';
+      if (ax < 10 && ay < 10) {
+        if (onStage) full.paused ? safePlay(full) : full.pause();
+        else if (type === 'mouse') close();
+      }
+    }
+  };
+  lb.addEventListener('pointerup', endDrag);
+  lb.addEventListener('pointercancel', endDrag);
+
+  /* ---------- Kursor, 3D egilish, nur, timecode ---------- */
+  let mx = innerWidth / 2, my = innerHeight / 3, cx = mx, cy = my, gx = mx, gy = my;
+  let tx = 0, ty = 0, cs = 0, csT = 0;
+  addEventListener('pointermove', e => { if (e.pointerType === 'mouse') { mx = e.clientX; my = e.clientY; } });
+  mosaic.addEventListener('pointerover', e => { csT = e.target.closest('.tile') ? 1 : 0; });
+  mosaic.addEventListener('pointerleave', () => { csT = 0; });
+  const t0 = performance.now();
+  /* Qiymat o'zgarmasa DOM'ga yozilmaydi — sichqon qimirlamaganda brauzer bekor ishlamaydi */
+  const put = (el, prop, val) => { if (el['_' + prop] !== val) { el['_' + prop] = val; el.style[prop] = val; } };
+  let lastF = -1;
+
+  (function loop(now) {
+    const f = Math.floor((now - t0) / 40);
+    if (f !== lastF) {
+      lastF = f;
+      tc.textContent = `${pad(Math.floor(f / 90000) % 24)}:${pad(Math.floor(f / 1500) % 60)}:${pad(Math.floor(f / 25) % 60)}:${pad(f % 25)}`;
+    }
+
+    if (fine.matches) {
+      const k = reduce ? 0 : 1;
+      const gxT = lbOpen ? 0 : (mx / innerWidth - 0.5) * 2 * k;
+      const gyT = lbOpen ? 0 : (my / innerHeight - 0.5) * 2 * k;
+      tx += (gxT - tx) * 0.06; ty += (gyT - ty) * 0.06;
+      put(mosaic, 'transform', `perspective(2200px) rotateY(${(tx * 2.6).toFixed(2)}deg) rotateX(${(-ty * 2.6).toFixed(2)}deg)`);
+      cx += (mx - cx) * 0.22; cy += (my - cy) * 0.22;
+      cs += ((lbOpen ? 0 : csT) - cs) * 0.18;
+      put(cursor, 'transform', `translate3d(${cx.toFixed(1)}px,${cy.toFixed(1)}px,0) scale(${cs.toFixed(3)})`);
+      gx += (mx - gx) * 0.05; gy += (my - gy) * 0.05;
+      put(glow, 'transform', `translate3d(${gx.toFixed(0)}px,${gy.toFixed(0)}px,0) translate(-50%,-50%)`);
+    }
+
+    if (lbOpen && cur >= 0) {
+      const v = stage.classList.contains('hd') ? full : tiles[cur].vid;
+      bar.style.transform = `scaleX(${v.duration ? (v.currentTime / v.duration).toFixed(4) : 0})`;
+    }
+    requestAnimationFrame(loop);
+  })(t0);
+})();
+</script>
+</body>
+</html>
