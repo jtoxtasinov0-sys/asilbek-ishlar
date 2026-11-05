@@ -458,17 +458,23 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
       .catch(() => { if (++t.tries < 2) t.queued = true; else use(t, t.v.thumb); })
       .finally(pump);
   }
+  /* Video to'liq yuklangan — darhol o'ynatiladi. (iPhone/Telegram videoni play() chaqirilmaguncha ochmaydi,
+     shuning uchun "loadeddata"ni kutib bo'lmaydi — aks holda kataklar qotib turadi.) */
+  const wantPlay = t => (t.inStage ? !stage.classList.contains('hd') : live && t.seen && !lbOpen);
   function use(t, url) {
     const vid = t.vid;
-    vid.addEventListener('loadeddata', () => {
-      t.ready = true;
-      if (t.inStage) { if (stage.classList.contains('hd')) return; safePlay(vid); }
-      else if (live && t.seen && !lbOpen) safePlay(vid);
-    }, { once: true });
     /* xotiradan o'ynay olmagan brauzer bo'lsa — oddiy havola bilan */
-    vid.addEventListener('error', () => { if (vid.src.startsWith('blob:')) { vid.src = t.v.thumb; vid.load(); } }, { once: true });
+    const fallback = () => {
+      if (!vid.src.startsWith('blob:')) return;
+      vid.src = t.v.thumb; vid.load();
+      if (wantPlay(t)) safePlay(vid);
+    };
+    vid.addEventListener('error', fallback, { once: true });
+    vid.addEventListener('play', () => setTimeout(() => { if (vid.readyState < 2 && !vid.paused) fallback(); }, 4000), { once: true });
     vid.preload = 'auto';
     vid.src = url;
+    t.ready = true;
+    if (wantPlay(t)) safePlay(vid);
   }
   tiles.forEach(t => { t.queued = true; });
   const begin = () => { if (!started) { started = true; pump(); } };
@@ -538,6 +544,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
         full.muted = true; // videolar ovozsiz — ovoz fon musiqasidan keladi
         full.src = url;
         syncing = true; jumps = 0;
+        safePlay(full); // ko'rinmay turib boshlanadi (iPhone faqat o'ynayotgan videoni ochadi), keyin kerakli kadrga keltiriladi
       })
       .catch(() => {})
       .finally(() => { if (ctl === hdCtl) { hdCtl = null; hdBusy = false; } pump(); });
