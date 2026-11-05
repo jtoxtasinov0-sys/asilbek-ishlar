@@ -284,7 +284,9 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
 
 <script>
 (() => {
-  /* ===== Videolar: media/thumb (katak), media/full (kattalashganda), media/poster ===== */
+  /* ===== Videolar: media/thumb (katak), media/hd720 (kattalashganda, yengil), media/full (asl 1080p — faqat katta ekran va tez internetda), media/poster =====
+     Yangi video qo'shilsa, hd720 nusxasini ham shu sozlamada yasang:
+     ffmpeg -i full/NN.mp4 -vf scale=-2:720 -c:v libx264 -preset slow -crf 23 -maxrate 1500k -bufsize 3000k -g 60 -an -movflags +faststart hd720/NN.mp4 */
   const COUNT = 24;
   const VERTICAL = [19];                 // vertikal (9:16) videolar raqami
   const pad = n => String(n).padStart(2, '0');
@@ -294,6 +296,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
       n: i + 1,
       thumb: `media/thumb/${n}.mp4`,
       full: `media/full/${n}.mp4`,
+      hd: `media/hd720/${n}.mp4`,
       poster: `media/poster/${n}.jpg`,
       aspect: VERTICAL.includes(i + 1) ? 9 / 16 : 16 / 9,
     };
@@ -404,9 +407,15 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
   const MAX = saveData ? 1 : 2;
   const net = { bytes: 0, ms: 0, since: 0, bad: 0 };
   /* internet tezligi (kbit/s): o'zimiz yuklagan videolardan o'lchanadi */
-  const kbps = () => net.ms > 400 ? net.bytes * 8 / net.ms : (conn && conn.downlink ? conn.downlink * 1000 : 5000);
-  /* HD video faqat internet ko'tara olsa yuklanadi; aks holda yengil video kattalashib turadi */
-  const hdOK = () => !saveData && net.bad < 2 && kbps() >= 2500;
+  const kbps = () => net.bytes && net.ms > 400 ? net.bytes * 8 / net.ms : (conn && conn.downlink ? conn.downlink * 1000 : 3000);
+  /* Kattalashganda qaysi video: internet ko'tarmasa — hech qaysi (yengil video kattalashib turadi),
+     odatda — 720p (bitreyti cheklangan, tez ochiladi), katta ekran + tez internet — asl 1080p.
+     HD to'xtab qolsa, keyingi safar bir pog'ona pastrog'i olinadi. */
+  const hdSrc = t => {
+    if (saveData || net.bad >= 2 || kbps() < 1000) return null;
+    const big = fine.matches && innerWidth * (devicePixelRatio || 1) >= 1800 && kbps() >= 8000 && net.bad === 0;
+    return big ? t.v.full : t.v.hd;
+  };
   let order = tiles, active = 0, started = false;
   function pump() {
     if (!started) return;
@@ -414,7 +423,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
       const t = pick();
       if (!t) return;
       /* oyna ochiqligida HD videoga yo'l beriladi: qolganlar kutib turadi */
-      const limit = t.inStage ? MAX : lbOpen ? (full.getAttribute('src') ? 0 : 1) : MAX;
+      const limit = t.inStage ? MAX : lbOpen ? (hdBusy ? 0 : 1) : MAX;
       if (active >= limit) return;
       t.queued = false;
       load(t);
@@ -431,13 +440,23 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     }
     return order.find(q => q.queued);
   }
-  function load(t) {
+  /* faylni to'liq xotiraga yuklab olish (va shu bilan internet tezligini o'lchash) */
+  function grab(url, signal) {
     if (!active++) net.since = performance.now();
-    fetch(t.v.thumb)
+    return fetch(url, { signal })
       .then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
-      .then(b => { net.bytes += b.size; use(t, URL.createObjectURL(new Blob([b], { type: 'video/mp4' }))); })
+      .then(b => { net.bytes += b.size; return URL.createObjectURL(new Blob([b], { type: 'video/mp4' })); })
+      .finally(() => {
+        const now = performance.now();
+        if (!(signal && signal.aborted)) net.ms += now - net.since;
+        net.since = now; active--;
+      });
+  }
+  function load(t) {
+    grab(t.v.thumb)
+      .then(url => use(t, url))
       .catch(() => { if (++t.tries < 2) t.queued = true; else use(t, t.v.thumb); })
-      .finally(() => { if (!--active) net.ms += performance.now() - net.since; pump(); });
+      .finally(pump);
   }
   function use(t, url) {
     const vid = t.vid;
@@ -485,16 +504,8 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     t.inStage = true;
     stage.insertBefore(t.vid, full);
     if (t.ready) { t.vid.currentTime = 0; safePlay(t.vid); } // ochilgan video doim boshidan (00:00) boshlanadi
-    stage.classList.remove('hd');
-    syncing = false;
-    full.playbackRate = 1;
-    if (hdOK()) {
-      full.src = t.v.full;
-      full.currentTime = 0;
-      full.muted = true; // videolar ovozsiz — ovoz fon musiqasidan keladi
-      syncing = true;
-      safePlay(full);
-    } else if (full.getAttribute('src')) { full.pause(); full.removeAttribute('src'); full.load(); }
+    clearHD();
+    loadHD(t);
     pump(); // hali yuklanmagan bo'lsa — navbatda birinchi bo'ladi
   }
   function detach(t) {
@@ -504,25 +515,62 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     t.inStage = false;
     t.vid.pause();
   }
-  /* HD video kechroq yuklanadi: ko'rinmay turib tezlashtirilgan holda kichik videoga yetib oladi, keyin almashadi —
-     video 0:00 dan ikkinchi marta boshlanmaydi, kichik video ham to'xtab qolmaydi */
-  let syncing = false;
+  /* HD video: to'liq yuklab olinadi (bu orada yengil video o'ynab turadi), keyin aynan o'sha kadrdan almashadi.
+     Xotiradagi HD internetga bog'liq emas — almashgandan keyin to'xtab qolmaydi va 0:00 dan qayta boshlanmaydi. */
+  let syncing = false, jumps = 0, hdCtl = null, hdUrl = '', hdBusy = false;
+  function clearHD() {
+    if (hdCtl) { hdCtl.abort(); hdCtl = null; }
+    hdBusy = false; syncing = false; jumps = 0;
+    stage.classList.remove('hd');
+    full.pause(); full.playbackRate = 1;
+    if (full.getAttribute('src')) { full.removeAttribute('src'); full.load(); }
+    if (hdUrl) { URL.revokeObjectURL(hdUrl); hdUrl = ''; }
+  }
+  function loadHD(t) {
+    const src = hdSrc(t);
+    if (!src) return;
+    const ctl = hdCtl = new AbortController();
+    hdBusy = true;
+    grab(src, ctl.signal)
+      .then(url => {
+        if (ctl !== hdCtl) { URL.revokeObjectURL(url); return; }
+        hdUrl = url;
+        full.muted = true; // videolar ovozsiz — ovoz fon musiqasidan keladi
+        full.src = url;
+        syncing = true; jumps = 0;
+      })
+      .catch(() => {})
+      .finally(() => { if (ctl === hdCtl) { hdCtl = null; hdBusy = false; } pump(); });
+  }
   function catchUp() {
     const t = tiles[cur], v = t.vid;
-    if (full.readyState < 3 || full.seeking) return;
-    if (!t.ready && full.currentTime < 0.05) return;
-    let lag = v.currentTime - full.currentTime;
-    if (v.duration && lag < -v.duration / 2) lag += v.duration; // kichik video aylanib boshiga qaytgan
-    if (lag > 0.04) { // yetib olgan sari sekinlashadi — almashganda sakrash bo'lmaydi
-      const rate = Math.min(4, Math.round((1 + lag * 8) * 4) / 4);
-      if (full.playbackRate !== rate) full.playbackRate = rate;
+    if (full.readyState < 2 || full.seeking) return;
+    if (!t.ready) { // yengil video hali yo'q — HD o'zi o'ynaydi va darhol chiqadi
+      if (full.paused) safePlay(full); else if (full.currentTime > 0.05) swapHD();
       return;
     }
+    if (v.paused) return; // foydalanuvchi pauza qilgan
+    const d = v.duration || 0, fd = full.duration || d;
+    let lag = v.currentTime - full.currentTime;
+    if (d && lag < -d / 2) lag += d; // kichik video aylanib boshiga qaytgan
+    if (d && lag > d / 2) lag -= d;
+    if (lag > 0.1 || lag < -1) { // HD kichik videodan sal oldinroqqa qo'yiladi va kutadi
+      if (++jumps > 8) { dropHD(); return; }
+      if (!full.paused) full.pause();
+      full.currentTime = (v.currentTime + 0.2 + 0.1 * jumps) % (fd || 1e9);
+      return;
+    }
+    if (lag < -0.03) { if (!full.paused) full.pause(); return; } // kichik video yetib kelishini kutadi
+    swapHD(); // aynan shu kadrda almashadi
+  }
+  function swapHD() {
     syncing = false;
     full.playbackRate = 1;
+    safePlay(full);
     stage.classList.add('hd');
-    v.pause();
+    tiles[cur].vid.pause();
   }
+  function dropHD() { clearHD(); pump(); }
   full.addEventListener('playing', () => {
     if (syncing || cur < 0) return;
     stage.classList.add('hd');
@@ -546,8 +594,8 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     safePlay(t.vid);
     stage.classList.remove('hd');
     full.playbackRate = 1;
-    if (net.bad >= 2) { syncing = false; full.pause(); full.removeAttribute('src'); full.load(); pump(); }
-    else syncing = true;
+    if (net.bad >= 2) dropHD();
+    else { syncing = true; jumps = 0; }
   }
 
   function ripple(src, out) {
@@ -617,8 +665,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     settle(a, D(700)).then(() => {
       detach(t);
       t.el.classList.remove('is-source');
-      full.pause(); full.removeAttribute('src'); full.load();
-      stage.classList.remove('hd');
+      clearHD();
       lb.classList.remove('is-active');
       a.cancel();
       document.documentElement.classList.remove('lock');
