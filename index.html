@@ -236,15 +236,6 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
   .mus__t{display:none}
 }
 
-/* ---------- Kuchsiz kompyuter / grafik tezlatkichsiz Chrome (skript "lite" qo'yadi): og'ir bezaklar o'chadi, videolar qoladi ---------- */
-html.lite body::after,html.lite .glow{display:none}
-html.lite .mosaic{will-change:auto;transform:none!important}
-html.lite .go .tile{animation-name:tileInLite}
-html.lite .lb__bg{-webkit-backdrop-filter:none;backdrop-filter:none;background:color-mix(in srgb,var(--bg) 88%,transparent)}
-html.lite .lb__btn{-webkit-backdrop-filter:none;backdrop-filter:none;background:color-mix(in srgb,var(--bg) 78%,transparent)}
-html.lite .tile:hover{box-shadow:none}
-html.lite .tile:hover video{transform:none}
-
 @media (prefers-reduced-motion:reduce){
   .go .tile,.go .intro>*{animation:none}
   .tile,.tile video{transition:opacity .2s}
@@ -341,29 +332,7 @@ html.lite .tile:hover video{transform:none}
     : 'cubic-bezier(.22,1,.36,1)';
   const D = ms => (reduce ? 1 : ms);
   /* telefonda katta videoni blur qilish og'ir (kadr tushib qoladi) — u yerda faqat surilish va xiralashish */
-  const BLUR = px => (fine.matches && !lite ? `blur(${px}px)` : 'none');
-
-  /* ---------- Kuchsiz qurilma: sayt o'zi yengillashadi ----------
-     Grafik tezlatkichsiz Chrome yoki kuchsiz kompyuterda 3D egilish, nur va blur kadrlarni ikki baravar kamaytiradi.
-     1-daraja: shu bezaklar o'chadi (videolar o'ynayveradi). 2-daraja (juda qiynalsa): 12 ta video o'ynaydi, qolgani to'xtaydi. */
-  let lite = 0;
-  const allowed = t => lite < 2 || t.rank === undefined || t.rank < 12 || t.inStage;
-  function goLite(level) {
-    if (level <= lite) return;
-    lite = level;
-    document.documentElement.classList.add('lite');
-    mosaic._transform = '';
-    mosaic.style.transform = '';
-    if (lite >= 2) tiles.forEach(t => { if (!allowed(t)) t.vid.pause(); });
-  }
-  /* grafik tezlatkich o'chiq bo'lsa (dasturiy chizish) — darhol yengil rejim */
-  if (fine.matches && !reduce) {
-    try {
-      const gl = document.createElement('canvas').getContext('webgl', { failIfMajorPerformanceCaveat: true });
-      if (!gl) goLite(1);
-      else { const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); }
-    } catch (e) {}
-  }
+  const BLUR = px => (fine.matches ? `blur(${px}px)` : 'none');
   const safePlay = v => { const p = v.play(); if (p) p.catch(() => {}); };
   $('#count').textContent = COUNT;
 
@@ -385,7 +354,7 @@ html.lite .tile:hover video{transform:none}
     el.addEventListener('click', () => open(i));
     return t;
   });
-  const playTile = t => { if (t.ready && allowed(t)) safePlay(t.vid); };
+  const playTile = t => { if (t.ready) safePlay(t.vid); };
 
   function layout() {
     const m = mq.matches, slots = m ? MOB : DESK, off = m ? 1 : 0;
@@ -414,7 +383,6 @@ html.lite .tile:hover video{transform:none}
     mosaic.classList.add('go');
     /* videolar ham shu tartibda yuklanadi: avval katta katak, keyin atrofidagilar */
     order = tiles.map((t, k) => [ds[k], t]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
-    order.forEach((t, k) => { t.rank = k; });
   });
 
   /* Faqat ko'rinib turgan videolar o'ynaydi; kirish animatsiyasi paytida va oyna ochiqligida to'xtab turadi */
@@ -492,7 +460,7 @@ html.lite .tile:hover video{transform:none}
   }
   /* Video to'liq yuklangan — darhol o'ynatiladi. (iPhone/Telegram videoni play() chaqirilmaguncha ochmaydi,
      shuning uchun "loadeddata"ni kutib bo'lmaydi — aks holda kataklar qotib turadi.) */
-  const wantPlay = t => (t.inStage ? !stage.classList.contains('hd') : live && t.seen && !lbOpen && allowed(t));
+  const wantPlay = t => (t.inStage ? !stage.classList.contains('hd') : live && t.seen && !lbOpen);
   function use(t, url) {
     const vid = t.vid;
     /* xotiradan o'ynay olmagan brauzer bo'lsa — oddiy havola bilan */
@@ -844,21 +812,9 @@ html.lite .tile:hover video{transform:none}
   const t0 = performance.now();
   /* Qiymat o'zgarmasa DOM'ga yozilmaydi — sichqon qimirlamaganda brauzer bekor ishlamaydi */
   const put = (el, prop, val) => { if (el['_' + prop] !== val) { el['_' + prop] = val; el.style[prop] = val; } };
-  let lastF = -1, lastNow = t0;
-  /* kadr tezligi kuzatiladi: 1,5 soniya ichida o'rtacha 40 fps dan past bo'lsa — yengil rejimga o'tadi */
-  const mon = { n: 0, sum: 0, slow: 0 };
-  const watch = dt => {
-    if (!live || reduce || lbOpen || busy || document.hidden || dt > 1000 || lite >= 2) { mon.n = mon.sum = mon.slow = 0; return; }
-    mon.n++; mon.sum += dt; if (dt > 50) mon.slow++;
-    if (mon.sum < 1500 || mon.n < 20) return;
-    const fps = 1000 * mon.n / mon.sum, slow = mon.slow;
-    mon.n = mon.sum = mon.slow = 0;
-    if (fps < 40 || slow > 8) { if (!lite) goLite(1); else if (fps < 25) goLite(2); }
-  };
+  let lastF = -1;
 
   (function loop(now) {
-    watch(now - lastNow);
-    lastNow = now;
     const f = Math.floor((now - t0) / 40);
     if (f !== lastF) {
       lastF = f;
@@ -866,18 +822,16 @@ html.lite .tile:hover video{transform:none}
     }
 
     if (fine.matches) {
+      const k = reduce ? 0 : 1;
+      const gxT = lbOpen ? 0 : (mx / innerWidth - 0.5) * 2 * k;
+      const gyT = lbOpen ? 0 : (my / innerHeight - 0.5) * 2 * k;
+      tx += (gxT - tx) * 0.06; ty += (gyT - ty) * 0.06;
+      put(mosaic, 'transform', `perspective(2200px) rotateY(${(tx * 2.6).toFixed(2)}deg) rotateX(${(-ty * 2.6).toFixed(2)}deg)`);
       cx += (mx - cx) * 0.22; cy += (my - cy) * 0.22;
       cs += ((lbOpen ? 0 : csT) - cs) * 0.18;
       put(cursor, 'transform', `translate3d(${cx.toFixed(1)}px,${cy.toFixed(1)}px,0) scale(${cs.toFixed(3)})`);
-      if (!lite) {
-        const k = reduce ? 0 : 1;
-        const gxT = lbOpen ? 0 : (mx / innerWidth - 0.5) * 2 * k;
-        const gyT = lbOpen ? 0 : (my / innerHeight - 0.5) * 2 * k;
-        tx += (gxT - tx) * 0.06; ty += (gyT - ty) * 0.06;
-        put(mosaic, 'transform', `perspective(2200px) rotateY(${(tx * 2.6).toFixed(2)}deg) rotateX(${(-ty * 2.6).toFixed(2)}deg)`);
-        gx += (mx - gx) * 0.05; gy += (my - gy) * 0.05;
-        put(glow, 'transform', `translate3d(${gx.toFixed(0)}px,${gy.toFixed(0)}px,0) translate(-50%,-50%)`);
-      }
+      gx += (mx - gx) * 0.05; gy += (my - gy) * 0.05;
+      put(glow, 'transform', `translate3d(${gx.toFixed(0)}px,${gy.toFixed(0)}px,0) translate(-50%,-50%)`);
     }
 
     if (lbOpen && cur >= 0) {
