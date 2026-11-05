@@ -336,6 +336,11 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
   const safePlay = v => { const p = v.play(); if (p) p.catch(() => {}); };
   $('#count').textContent = COUNT;
 
+  /* iPhone, iPad va Safari (hamma iOS brauzerlari, Telegram ichidagisi ham): videolar oldingidek oddiy havola bilan
+     ochiladi — u yerda xotiraga yuklangan video o'zi boshlanmay, faqat bosilganda qimirlardi */
+  const UA = navigator.userAgent;
+  const APPLE = (/AppleWebKit/.test(UA) && !/Chrome|Chromium|Android|Edg|OPR|SamsungBrowser/.test(UA)) || /CriOS|FxiOS|EdgiOS|OPiOS/.test(UA);
+
   /* ---------- Kataklarni yasash ---------- */
   /* Video darhol yuklanmaydi: avval rasm (poster) chiqadi, video navbat bilan keladi (pastda "Yuklash navbati") */
   const tiles = VIDEOS.map((v, i) => {
@@ -344,12 +349,13 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     el.className = 'tile';
     el.setAttribute('aria-label', `${v.n}-video, kattalashtirish`);
     const vid = document.createElement('video');
-    vid.muted = true; vid.loop = true; vid.playsInline = true; vid.preload = 'none';
+    vid.muted = true; vid.loop = true; vid.playsInline = true; vid.preload = APPLE ? 'metadata' : 'none';
     vid.setAttribute('muted', ''); vid.setAttribute('playsinline', '');
     vid.poster = v.poster;
+    if (APPLE) vid.src = v.thumb;
     el.appendChild(vid);
     mosaic.appendChild(el);
-    const t = { el, vid, v, i, inStage: false, anim: null, slot: null, ready: false, queued: false, tries: 0 };
+    const t = { el, vid, v, i, inStage: false, anim: null, slot: null, ready: APPLE, queued: false, tries: 0 };
     el._t = t;
     el.addEventListener('click', () => open(i));
     return t;
@@ -476,7 +482,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     t.ready = true;
     if (wantPlay(t)) safePlay(vid);
   }
-  tiles.forEach(t => { t.queued = true; });
+  if (!APPLE) tiles.forEach(t => { t.queued = true; });
   const begin = () => { if (!started) { started = true; pump(); } };
   /* avval sahifa va rasmlar chiqadi, keyin videolar */
   addEventListener('load', () => setTimeout(begin, 0), { once: true });
@@ -535,6 +541,12 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
   function loadHD(t) {
     const src = hdSrc(t);
     if (!src) return;
+    if (APPLE) { // iPhone/Safari: oddiy havola, bosish paytida boshlanadi (ruxsat shu paytda beriladi)
+      full.muted = true; full.src = src;
+      syncing = true; jumps = 0;
+      safePlay(full);
+      return;
+    }
     const ctl = hdCtl = new AbortController();
     hdBusy = true;
     grab(src, ctl.signal)
