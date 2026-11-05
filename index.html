@@ -346,7 +346,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
      bitta videoni o'ynaydi, har bir katakka o'z bo'lagi tushadi. Katak bosilganda o'z videosi kattalashadi.
      Videolar o'zgarsa, mozaika ham qayta yasaladi; CELLS — har bir videoning mozaikadagi joyi [x, y, eni, bo'yi]. */
   const MOSAIC = APPLE && navigator.maxTouchPoints > 0 && !reduce;
-  const CELLS = {1:[0,0,768,432],2:[768,0,384,216],3:[1152,0,384,216],4:[1536,0,384,216],5:[1920,0,384,216],6:[768,216,384,216],7:[1152,216,384,216],8:[1536,216,384,216],9:[1920,216,384,216],10:[0,432,384,216],11:[384,432,384,216],12:[768,432,384,216],13:[1152,432,384,216],14:[1536,432,384,216],15:[1920,432,384,216],16:[0,648,384,216],17:[384,648,384,216],18:[768,648,384,216],19:[1920,648,216,384],20:[1152,648,384,216],21:[1536,648,384,216],22:[0,864,384,216],23:[384,864,384,216],24:[768,864,384,216]};
+  const CELLS = {1:[0,0,512,288],2:[512,0,256,144],3:[768,0,256,144],4:[1024,0,256,144],5:[1280,0,256,144],6:[512,144,256,144],7:[768,144,256,144],8:[1024,144,256,144],9:[1280,144,256,144],10:[0,288,256,144],11:[256,288,256,144],12:[512,288,256,144],13:[768,288,256,144],14:[1024,288,256,144],15:[1280,288,256,144],16:[0,432,256,144],17:[256,432,256,144],18:[512,432,256,144],19:[1280,432,144,256],20:[768,432,256,144],21:[1024,432,256,144],22:[0,576,256,144],23:[256,576,256,144],24:[512,576,256,144]};
   let mosaicOn = MOSAIC;
 
   /* ---------- Kataklarni yasash ---------- */
@@ -462,8 +462,10 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     mv.addEventListener('seeked', drawMosaic);
     document.addEventListener('visibilitychange', () => { if (!document.hidden && mosaicOn && live && !lbOpen) safePlay(mv); });
     safePlay(mv); // yuklash shu bilan boshlanadi (iPhone faqat o'ynayotgan videoni yuklaydi)
-    /* 8 soniyada bitta kadr ham kelmasa — oddiy usulga */
-    setTimeout(() => { if (mosaicOn && mv.readyState < 2) mosaicFail(); }, 8000);
+    /* sekin kelsa ham kutadi — oddiy usulga faqat xato bo'lsa qaytadi (u yerda iPhone 2-4 ta videoni ko'taradi, xolos).
+       Orqaga qaytib kirilganda ham davom etadi. */
+    addEventListener('pageshow', () => { if (mosaicOn && !lbOpen) safePlay(mv); });
+    mv.addEventListener('pause', () => { if (mosaicOn && live && !lbOpen && !document.hidden) setTimeout(() => { if (mv.paused && !lbOpen) safePlay(mv); }, 300); });
   }
 
   /* ---------- Yuklash navbati ----------
