@@ -22,10 +22,14 @@
 <meta name="twitter:title" content="Asilbek Adhamov — Mana shunday ishlar.">
 <meta name="twitter:description" content="24 ta motion video. Bosing va koʻring.">
 <meta name="twitter:image" content="https://asilbek-ishlar.vercel.app/og.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<!-- Shriftlar o'z serverimizda: Google'ga ulanishni kutib sahifa oq turib qolmaydi -->
+<link rel="preload" href="fonts/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+@font-face{font-family:"Bricolage Grotesque";src:url("fonts/bricolage-grotesque-latin-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:swap;
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Bricolage Grotesque";src:url("fonts/bricolage-grotesque-latin-ext-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:swap;
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"JetBrains Mono";src:url("fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2");font-weight:100 800;font-display:swap}
 :root{
   /* ===== RANGLAR: Orange · White · Brown ===== */
   --bg:#140b06;          /* eng to'q jigarrang — fon */
@@ -117,6 +121,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
 .mosaic:not(.go) .tile,.mosaic:not(.go) .intro>*{opacity:0}
 .go .tile{animation:tileIn 1.15s var(--ease) var(--delay,0s) backwards}
 @keyframes tileIn{from{opacity:0;transform:scale(.5);filter:blur(16px) brightness(1.8)}}
+@keyframes tileInLite{from{opacity:0;transform:scale(.5)}}
 .go .intro>*{animation:rise 1s var(--ease) backwards}
 .go .intro>:nth-child(2){animation-delay:.08s}
 .go .intro>:nth-child(3){animation-delay:.5s}
@@ -172,6 +177,15 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
   filter:drop-shadow(0 3px 6px rgba(0,0,0,.45));
 }
 @media not ((hover:hover) and (pointer:fine)){.cursor,.glow{display:none}}
+
+/* ---------- Telefon/planshet: og'ir effektlarsiz (24 ta video ustida blur har kadrda qayta chiziladi va qotiradi) ---------- */
+@media not ((hover:hover) and (pointer:fine)){
+  body::after{display:none}
+  .mosaic{will-change:auto}
+  .go .tile{animation-name:tileInLite}
+  .lb__bg{-webkit-backdrop-filter:none;backdrop-filter:none;background:color-mix(in srgb,var(--bg) 88%,transparent)}
+  .lb__btn{-webkit-backdrop-filter:none;backdrop-filter:none;background:color-mix(in srgb,var(--bg) 78%,transparent)}
+}
 
 /* ---------- Telefon: hammasi bitta ekranda ---------- */
 @media (max-width:759px),(max-width:1023px) and (orientation:portrait){
@@ -240,7 +254,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
       <span class="rec" aria-hidden="true"><i></i><span id="tc">00:00:00:00</span></span>
     </div>
   </header>
-  <audio id="music" src="media/music.m4a" loop preload="metadata"></audio>
+  <audio id="music" src="media/music.m4a" loop preload="none"></audio>
 
   <section class="mosaic" id="mosaic" aria-label="Ishlar">
     <div class="intro">
@@ -314,26 +328,30 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     ? 'linear(0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25.3%, 0.849 31.5%, 0.937 38.1%, 0.968 41.8%, 0.991 45.7%, 1.006 50.1%, 1.015 55%, 1.017 63.9%, 1.001)'
     : 'cubic-bezier(.22,1,.36,1)';
   const D = ms => (reduce ? 1 : ms);
+  /* telefonda katta videoni blur qilish og'ir (kadr tushib qoladi) — u yerda faqat surilish va xiralashish */
+  const BLUR = px => (fine.matches ? `blur(${px}px)` : 'none');
   const safePlay = v => { const p = v.play(); if (p) p.catch(() => {}); };
   $('#count').textContent = COUNT;
 
   /* ---------- Kataklarni yasash ---------- */
+  /* Video darhol yuklanmaydi: avval rasm (poster) chiqadi, video navbat bilan keladi (pastda "Yuklash navbati") */
   const tiles = VIDEOS.map((v, i) => {
     const el = document.createElement('button');
     el.type = 'button';
     el.className = 'tile';
     el.setAttribute('aria-label', `${v.n}-video, kattalashtirish`);
     const vid = document.createElement('video');
-    vid.muted = true; vid.loop = true; vid.playsInline = true; vid.preload = 'metadata';
+    vid.muted = true; vid.loop = true; vid.playsInline = true; vid.preload = 'none';
     vid.setAttribute('muted', ''); vid.setAttribute('playsinline', '');
-    vid.poster = v.poster; vid.src = v.thumb;
+    vid.poster = v.poster;
     el.appendChild(vid);
     mosaic.appendChild(el);
-    const t = { el, vid, v, i, inStage: false, anim: null, slot: null };
+    const t = { el, vid, v, i, inStage: false, anim: null, slot: null, ready: false, queued: false, tries: 0 };
     el._t = t;
     el.addEventListener('click', () => open(i));
     return t;
   });
+  const playTile = t => { if (t.ready) safePlay(t.vid); };
 
   function layout() {
     const m = mq.matches, slots = m ? MOB : DESK, off = m ? 1 : 0;
@@ -360,6 +378,8 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     const max = Math.max(...ds) || 1;
     tiles.forEach((t, k) => t.el.style.setProperty('--delay', (0.1 + (ds[k] / max) * 0.9).toFixed(3) + 's'));
     mosaic.classList.add('go');
+    /* videolar ham shu tartibda yuklanadi: avval katta katak, keyin atrofidagilar */
+    order = tiles.map((t, k) => [ds[k], t]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
   });
 
   /* Faqat ko'rinib turgan videolar o'ynaydi; kirish animatsiyasi paytida va oyna ochiqligida to'xtab turadi */
@@ -368,12 +388,74 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     const t = e.target._t;
     t.seen = e.isIntersecting;
     if (t.inStage || !live || lbOpen) return;
-    t.seen ? safePlay(t.vid) : t.vid.pause();
+    t.seen ? playTile(t) : t.vid.pause();
   }), { threshold: 0.01 });
   tiles.forEach(t => io.observe(t.el));
-  const playSeen = () => tiles.forEach(t => { if (!t.inStage && t.seen) safePlay(t.vid); });
+  const playSeen = () => tiles.forEach(t => { if (!t.inStage && t.seen) playTile(t); });
   const pauseAll = () => tiles.forEach(t => { if (!t.inStage) t.vid.pause(); });
   setTimeout(() => { live = true; if (!lbOpen) playSeen(); }, reduce ? 0 : 1500);
+
+  /* ---------- Yuklash navbati ----------
+     24 ta video birdaniga yuklansa, sekin internetda hammasi bir-biriga xalaqit berib qotib qoladi.
+     Shuning uchun videolar bittadan-ikkitadan, to'liq yuklab olinadi (xotiraga) va tayyor bo'lgani darhol o'ynaydi.
+     Xotiradagi video aylanib qayta boshlanganda ham internetga murojaat qilmaydi — hech qachon to'xtab qolmaydi. */
+  const conn = navigator.connection || null;
+  const saveData = !!(conn && (conn.saveData || /2g/.test(conn.effectiveType || '')));
+  const MAX = saveData ? 1 : 2;
+  const net = { bytes: 0, ms: 0, since: 0, bad: 0 };
+  /* internet tezligi (kbit/s): o'zimiz yuklagan videolardan o'lchanadi */
+  const kbps = () => net.ms > 400 ? net.bytes * 8 / net.ms : (conn && conn.downlink ? conn.downlink * 1000 : 5000);
+  /* HD video faqat internet ko'tara olsa yuklanadi; aks holda yengil video kattalashib turadi */
+  const hdOK = () => !saveData && net.bad < 2 && kbps() >= 2500;
+  let order = tiles, active = 0, started = false;
+  function pump() {
+    if (!started) return;
+    for (;;) {
+      const t = pick();
+      if (!t) return;
+      /* oyna ochiqligida HD videoga yo'l beriladi: qolganlar kutib turadi */
+      const limit = t.inStage ? MAX : lbOpen ? (full.getAttribute('src') ? 0 : 1) : MAX;
+      if (active >= limit) return;
+      t.queued = false;
+      load(t);
+    }
+  }
+  /* navbat: ochilgan video, keyin uning qo'shnilari (keyingi/oldingi), keyin qolganlari */
+  function pick() {
+    const s = tiles.find(q => q.inStage && q.queued);
+    if (s) return s;
+    if (lbOpen && cur >= 0) {
+      const n = tiles[(cur + 1) % COUNT], p = tiles[(cur - 1 + COUNT) % COUNT];
+      if (n.queued) return n;
+      if (p.queued) return p;
+    }
+    return order.find(q => q.queued);
+  }
+  function load(t) {
+    if (!active++) net.since = performance.now();
+    fetch(t.v.thumb)
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
+      .then(b => { net.bytes += b.size; use(t, URL.createObjectURL(new Blob([b], { type: 'video/mp4' }))); })
+      .catch(() => { if (++t.tries < 2) t.queued = true; else use(t, t.v.thumb); })
+      .finally(() => { if (!--active) net.ms += performance.now() - net.since; pump(); });
+  }
+  function use(t, url) {
+    const vid = t.vid;
+    vid.addEventListener('loadeddata', () => {
+      t.ready = true;
+      if (t.inStage) { if (stage.classList.contains('hd')) return; safePlay(vid); }
+      else if (live && t.seen && !lbOpen) safePlay(vid);
+    }, { once: true });
+    /* xotiradan o'ynay olmagan brauzer bo'lsa — oddiy havola bilan */
+    vid.addEventListener('error', () => { if (vid.src.startsWith('blob:')) { vid.src = t.v.thumb; vid.load(); } }, { once: true });
+    vid.preload = 'auto';
+    vid.src = url;
+  }
+  tiles.forEach(t => { t.queued = true; });
+  const begin = () => { if (!started) { started = true; pump(); } };
+  /* avval sahifa va rasmlar chiqadi, keyin videolar */
+  addEventListener('load', () => setTimeout(begin, 0), { once: true });
+  setTimeout(begin, 2500);
 
   /* ---------- Kattalashtirish ---------- */
   let cur = -1, busy = false, lbOpen = false, sound = true, queued = null;
@@ -402,15 +484,18 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
   function attach(t) {
     t.inStage = true;
     stage.insertBefore(t.vid, full);
-    t.vid.currentTime = 0; // ochilgan video doim boshidan (00:00) boshlanadi
-    safePlay(t.vid);
+    if (t.ready) { t.vid.currentTime = 0; safePlay(t.vid); } // ochilgan video doim boshidan (00:00) boshlanadi
     stage.classList.remove('hd');
-    full.src = t.v.full;
-    full.currentTime = 0;
-    full.muted = true; // videolar ovozsiz — ovoz fon musiqasidan keladi
+    syncing = false;
     full.playbackRate = 1;
-    syncing = true;
-    safePlay(full);
+    if (hdOK()) {
+      full.src = t.v.full;
+      full.currentTime = 0;
+      full.muted = true; // videolar ovozsiz — ovoz fon musiqasidan keladi
+      syncing = true;
+      safePlay(full);
+    } else if (full.getAttribute('src')) { full.pause(); full.removeAttribute('src'); full.load(); }
+    pump(); // hali yuklanmagan bo'lsa — navbatda birinchi bo'ladi
   }
   function detach(t) {
     if (!t.inStage) return;
@@ -423,9 +508,11 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
      video 0:00 dan ikkinchi marta boshlanmaydi, kichik video ham to'xtab qolmaydi */
   let syncing = false;
   function catchUp() {
-    const v = tiles[cur].vid;
+    const t = tiles[cur], v = t.vid;
     if (full.readyState < 3 || full.seeking) return;
-    const lag = v.currentTime - full.currentTime;
+    if (!t.ready && full.currentTime < 0.05) return;
+    let lag = v.currentTime - full.currentTime;
+    if (v.duration && lag < -v.duration / 2) lag += v.duration; // kichik video aylanib boshiga qaytgan
     if (lag > 0.04) { // yetib olgan sari sekinlashadi — almashganda sakrash bo'lmaydi
       const rate = Math.min(4, Math.round((1 + lag * 8) * 4) / 4);
       if (full.playbackRate !== rate) full.playbackRate = rate;
@@ -437,10 +524,31 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     v.pause();
   }
   full.addEventListener('playing', () => {
-    if (syncing) return;
+    if (syncing || cur < 0) return;
     stage.classList.add('hd');
-    if (cur >= 0) tiles[cur].vid.pause();
+    tiles[cur].vid.pause();
   });
+  /* HD video internet sekinlashib to'xtab qolsa — ko'rinmay turib yana yengil videoga o'tamiz (o'sha joydan davom etadi).
+     Ikki marta shunday bo'lsa, bu internetda HD umuman yuklanmaydi. */
+  let stallT = 0;
+  full.addEventListener('waiting', () => {
+    clearTimeout(stallT);
+    stallT = setTimeout(hdStalled, 250); // bir lahzalik uzilish hisobga olinmaydi
+  });
+  full.addEventListener('playing', () => clearTimeout(stallT));
+  full.addEventListener('emptied', () => clearTimeout(stallT));
+  function hdStalled() {
+    if (cur < 0 || !stage.classList.contains('hd') || full.readyState >= 3 || full.paused) return;
+    const t = tiles[cur];
+    if (!t.ready) return;
+    net.bad++;
+    if (t.vid.duration) t.vid.currentTime = full.currentTime % t.vid.duration;
+    safePlay(t.vid);
+    stage.classList.remove('hd');
+    full.playbackRate = 1;
+    if (net.bad >= 2) { syncing = false; full.pause(); full.removeAttribute('src'); full.load(); pump(); }
+    else syncing = true;
+  }
 
   function ripple(src, out) {
     const c0 = center(src.el);
@@ -516,6 +624,7 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
       document.documentElement.classList.remove('lock');
       lbOpen = false; cur = -1;
       if (live) playSeen();
+      pump();
       t.el.focus({ preventScroll: true });
       idle();
     });
@@ -527,8 +636,8 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     const old = tiles[cur], ni = (cur + d + COUNT) % COUNT, nt = tiles[ni];
     stage.style.translate = '';
     const out = stage.animate(
-      [{ transform: 'none', opacity: 1, filter: 'blur(0px)' },
-       { transform: `translate${ax}(${-d * 10}%) scale(.9)`, opacity: 0, filter: 'blur(10px)' }],
+      [{ transform: 'none', opacity: 1, filter: BLUR(0) },
+       { transform: `translate${ax}(${-d * 10}%) scale(.9)`, opacity: 0, filter: BLUR(10) }],
       { duration: D(260), easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
     settle(out, D(260)).then(() => {
       detach(old);
@@ -541,8 +650,8 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
       setBox(target(nt));
       out.cancel();
       const inA = stage.animate(
-        [{ transform: `translate${ax}(${d * 10}%) scale(.9)`, opacity: 0, filter: 'blur(10px)' },
-         { transform: 'none', opacity: 1, filter: 'blur(0px)' }],
+        [{ transform: `translate${ax}(${d * 10}%) scale(.9)`, opacity: 0, filter: BLUR(10) },
+         { transform: 'none', opacity: 1, filter: BLUR(0) }],
         { duration: D(620), easing: SPRING }
       );
       settle(inA, D(620)).then(idle);
@@ -625,11 +734,18 @@ body::after{ /* plyonka donadorligi (blend-mode'siz: videolar ustida har kadrda 
     else {
       stage.style.translate = '';
       if (ax < 10 && ay < 10) {
-        if (onStage) full.paused ? safePlay(full) : full.pause();
+        if (onStage) togglePlay();
         else if (type === 'mouse') close();
       }
     }
   };
+  /* videoga tegish — pauza/davom; ko'rinib turgan videoni boshqaradi (HD hali kelmagan bo'lsa ham) */
+  function togglePlay() {
+    if (cur < 0) return;
+    const hd = stage.classList.contains('hd'), v = hd ? full : tiles[cur].vid;
+    if (v.paused) { safePlay(v); if (!hd && syncing) safePlay(full); }
+    else { v.pause(); if (!hd) full.pause(); }
+  }
   lb.addEventListener('pointerup', endDrag);
   lb.addEventListener('pointercancel', endDrag);
 
